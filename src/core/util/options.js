@@ -398,6 +398,7 @@ export function mergeOptions (
     child = child.options
   }
 
+  //标准化参数为统一对象格式
   normalizeProps(child, vm)
   normalizeInject(child, vm)
   normalizeDirectives(child)
@@ -406,6 +407,7 @@ export function mergeOptions (
   // but only if it is a raw options object that isn't
   // the result of another mergeOptions call.
   // Only merged options has the _base property.
+  // 递归合并选项
   if (!child._base) {
     if (child.extends) {
       parent = mergeOptions(parent, child.extends, vm)
@@ -417,12 +419,14 @@ export function mergeOptions (
     }
   }
 
+  // 最后 返回的 合并结果
   const options = {}
   let key
   for (key in parent) {
     mergeField(key)
   }
   for (key in child) {
+    //子与父 属性 冲突, 会覆盖父
     if (!hasOwn(parent, key)) {
       mergeField(key)
     }

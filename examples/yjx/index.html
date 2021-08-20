@@ -9,10 +9,13 @@
   <body>
     <div id="app">
       <p>{{msg}}</p>
+      <comp :msg="msg"></comp>
     </div>
     <script src="../../dist/vue.js"></script>
     <script>
-      debugger;
+      Vue.component("comp", {
+        template: "<div>I am a comp</div>",
+      });
       new Vue({
         el: "#app",
         data: {
