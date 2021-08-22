@@ -30,6 +30,7 @@ export default class Dep {
 
   depend () {
     if (Dep.target) {
+      //this 就是 Dep实例
       Dep.target.addDep(this)
     }
   }

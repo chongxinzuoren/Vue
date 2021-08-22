@@ -44,6 +44,7 @@ export default class Watcher {
 
   constructor (
     vm: Component,
+    //实例化watcher时的第二个参数, getter函数
     expOrFn: string | Function,
     cb: Function,
     options?: ?Object,
@@ -90,6 +91,7 @@ export default class Watcher {
         )
       }
     }
+    //通过传入的lazy, 延迟watch.get方法的执行
     this.value = this.lazy
       ? undefined
       : this.get()
@@ -99,6 +101,7 @@ export default class Watcher {
    * Evaluate the getter, and re-collect dependencies.
    */
   get () {
+    //this就是watcher实例, 即Dep.target是watcher实例
     pushTarget(this)
     let value
     const vm = this.vm
@@ -124,13 +127,17 @@ export default class Watcher {
 
   /**
    * Add a dependency to this directive.
+   * 将dep放到Watcher中
    */
   addDep (dep: Dep) {
     const id = dep.id
+    //如果dep没有被收集过
     if (!this.newDepIds.has(id)) {
+      //set, 自动去重
       this.newDepIds.add(id)
       this.newDeps.push(dep)
       if (!this.depIds.has(id)) {
+        //将watcher实例自己放到dep中, 双向收集
         dep.addSub(this)
       }
     }

@@ -8,20 +8,63 @@
   </head>
   <body>
     <div id="app">
-      <p>{{msg}}</p>
+      <p>{{printMsg}}</p>
+      <p>{{printMsg}}</p>
+      <p>{{test()}}</p>
+      <p>{{test()}}</p>
+      <p>{{arr[0]}}</p>
+      <p>{{arr[0].a}}</p>
       <comp :msg="msg"></comp>
     </div>
     <script src="../../dist/vue.js"></script>
     <script>
       Vue.component("comp", {
+        props: {
+          msg: {
+            type: String,
+            default: "",
+          },
+        },
+        /* created() {
+          console.log(this._props, this.msg);
+        }, */
         template: "<div>I am a comp</div>",
       });
-      new Vue({
+      let vm = new Vue({
         el: "#app",
         data: {
           msg: "hello vue",
+          arr: [1, { a: "aa" }],
+        },
+        created() {
+          /* setInterval(() => {
+            this.msg += "1";
+          }, 1000); */
+        },
+        computed: {
+          printMsg() {
+            console.log("----------> computed__ pringMsg");
+            return `${this.msg}-->computed`;
+          },
+        },
+        watch: {
+          msg: [
+            function (newV, oldV) {
+              console.log(newV, oldV, "-------> 第一次watch");
+            },
+            (newV, oldV) => {
+              console.log(newV, oldV, "-------> 第二次watch");
+            },
+          ],
+        },
+        methods: {
+          test() {
+            console.log("----------> methods__ test");
+            return `${this.msg}-->methods`;
+          },
         },
       });
+      console.log(vm);
     </script>
   </body>
 </html>
