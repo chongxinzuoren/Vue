@@ -80,6 +80,7 @@ export default class Watcher {
     if (typeof expOrFn === 'function') {
       this.getter = expOrFn
     } else {
+      //传递的是字符串key, 可以通过this.key
       this.getter = parsePath(expOrFn)
       if (!this.getter) {
         this.getter = noop
@@ -99,13 +100,22 @@ export default class Watcher {
 
   /**
    * Evaluate the getter, and re-collect dependencies.
+   * 触发 updateComponent 的执行, 进行组件更新, 进入patch阶段,
+   * 更新组件时先执行 render 生成 VNode, 期间触发读取操作, 进行依赖收集
    */
   get () {
+    // 什么情况下才会执行 更新?
+    // 对新值进行依赖收集
+    // 读取时收集依赖
     //this就是watcher实例, 即Dep.target是watcher实例
     pushTarget(this)
     let value
     const vm = this.vm
     try {
+      //执行实例化 watcher 时 传递进来的第二个参数
+      // 有可能是一个函数, 比如 实例化渲染 watcher 时传递的 updateComponent函数
+      // 用户 watcher, 可能传递的一个key, 也可能是读取 this.key 的函数
+      // 触发读取操作, 被 getter 拦截, 进行依赖收集
       value = this.getter.call(vm, vm)
     } catch (e) {
       if (this.user) {
@@ -171,10 +181,16 @@ export default class Watcher {
   update () {
     /* istanbul ignore else */
     if (this.lazy) {
+      //懒执行, 如computed
+      //在组件更新后, 当响应式数据再次被更新时, 执行 computed getter
+      //重新执行computed 回调函数, 计算新值, 然后缓存到watcher.value
       this.dirty = true
     } else if (this.sync) {
+      //同步执行
+      //this.$watche 或者 watch 传递一个{sync:true}配置
       this.run()
     } else {
+      //将当前watcher 放入 watcher 队列
       queueWatcher(this)
     }
   }
@@ -185,6 +201,7 @@ export default class Watcher {
    */
   run () {
     if (this.active) {
+      //重新求值
       const value = this.get()
       if (
         value !== this.value ||
@@ -195,9 +212,12 @@ export default class Watcher {
         this.deep
       ) {
         // set new value
+        // 旧值
         const oldValue = this.value
         this.value = value
         if (this.user) {
+          //用户watcher
+          //watch:{cc(newVal, oldVal){}}
           try {
             this.cb.call(this.vm, value, oldValue)
           } catch (e) {

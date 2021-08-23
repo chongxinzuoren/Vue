@@ -44,6 +44,7 @@ export default class Dep {
       // order
       subs.sort((a, b) => a.id - b.id)
     }
+    //遍历收集的所有watcher,一次执行watcher.update
     for (let i = 0, l = subs.length; i < l; i++) {
       subs[i].update()
     }

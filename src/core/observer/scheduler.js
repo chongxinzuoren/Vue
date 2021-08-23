@@ -68,13 +68,16 @@ if (inBrowser && !isIE) {
 /**
  * Flush both queues and run the watchers.
  */
+//刷新 watcher 队列, 执行queue数组中的每一个watcher的run方法
 function flushSchedulerQueue () {
   currentFlushTimestamp = getNow()
+  //置为true, 表示 当前的 watcher队列 正在被更新
   flushing = true
   let watcher, id
 
   // Sort queue before flush.
   // This ensures that:
+  // 使父组件watch 先于 子组件 watch 更新, 否则会更新2次
   // 1. Components are updated from parent to child. (because parent is always
   //    created before the child)
   // 2. A component's user watchers are run before its render watcher (because
@@ -85,13 +88,18 @@ function flushSchedulerQueue () {
 
   // do not cache length because more watchers might be pushed
   // as we run existing watchers
+  // 遍历 watcher 队列, 依次执行 watch 的run方法
+  // queue.length: 因为此时 queue 可能还会继续加入新的watcher, 需要动态计算
   for (index = 0; index < queue.length; index++) {
     watcher = queue[index]
+    //首先执行before 钩子
     if (watcher.before) {
       watcher.before()
     }
+    //清空缓存, 表示当前watcher 已经被执行, 后续 才可再次入队
     id = watcher.id
     has[id] = null
+
     watcher.run()
     // in dev build, check and stop circular updates.
     if (process.env.NODE_ENV !== 'production' && has[id] != null) {
@@ -163,27 +171,38 @@ function callActivatedHooks (queue) {
  */
 export function queueWatcher (watcher: Watcher) {
   const id = watcher.id
+  //判重, watcher 不会重复入队
   if (has[id] == null) {
     has[id] = true
     if (!flushing) {
+      //如果为flushing=false, 表示当前watcher 队列没有被更新, watcher直接入队
       queue.push(watcher)
     } else {
       // if already flushing, splice the watcher based on its id
       // if already past its id, it will be run next immediately.
+      //watcher 队列 已经被刷新
       let i = queue.length - 1
+      //排序watcher队列
       while (i > index && queue[i].id > watcher.id) {
         i--
       }
+      //在索引为i+1处 插入 watcher
+      //保证watcher 入队后, watcher是有序的 
       queue.splice(i + 1, 0, watcher)
     }
     // queue the flush
+
     if (!waiting) {
+      // 当前浏览器的异步任务队列没有 flushSchedulerQueue 函数
       waiting = true
 
       if (process.env.NODE_ENV !== 'production' && !config.async) {
+        //同步执行, 直接刷新 watcher 队列
+        //性能很差
         flushSchedulerQueue()
         return
       }
+      //this.$nextTick, Vue.nextTick
       nextTick(flushSchedulerQueue)
     }
   }

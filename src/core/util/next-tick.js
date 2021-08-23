@@ -10,6 +10,13 @@ export let isUsingMicroTask = false
 const callbacks = []
 let pending = false
 
+/**
+ * 1. 将pending 置为 false, 表示下一个 flushCallbacks 可以进入浏览器的异步任务队列了
+ * 2. 清空callbacks 数组
+ * 3. 执行callbacks 数组中的所有函数
+ *    flushSchedulerQueue
+ *    用户自己调用 nextTick 传递的 回调函数
+ */
 function flushCallbacks () {
   pending = false
   const copies = callbacks.slice(0)
@@ -30,6 +37,7 @@ function flushCallbacks () {
 // where microtasks have too high a priority and fire in between supposedly
 // sequential events (e.g. #4521, #6690, which have workarounds)
 // or even between bubbling of the same event (#6566).
+//将 flushCallbacks 函数 放到浏览器异步微任务队列当中
 let timerFunc
 
 // The nextTick behavior leverages the microtask queue, which can be accessed
@@ -39,6 +47,7 @@ let timerFunc
 // completely stops working after triggering a few times... so, if native
 // Promise is available, we will use it:
 /* istanbul ignore next, $flow-disable-line */
+//微任务
 if (typeof Promise !== 'undefined' && isNative(Promise)) {
   const p = Promise.resolve()
   timerFunc = () => {
@@ -70,6 +79,7 @@ if (typeof Promise !== 'undefined' && isNative(Promise)) {
     textNode.data = String(counter)
   }
   isUsingMicroTask = true
+  //宏任务
 } else if (typeof setImmediate !== 'undefined' && isNative(setImmediate)) {
   // Fallback to setImmediate.
   // Technically it leverages the (macro) task queue,
@@ -84,8 +94,11 @@ if (typeof Promise !== 'undefined' && isNative(Promise)) {
   }
 }
 
+//pending: 保证在同一时刻, 浏览器的任务队列只有一个flushCallbacks
 export function nextTick (cb?: Function, ctx?: Object) {
   let _resolve
+  //将 nextTick 的回调函数用 try-catch 包装一层, 方便异常捕获
+  //将包装后的函数 添加到 calllbacks 数组中
   callbacks.push(() => {
     if (cb) {
       try {
@@ -99,6 +112,7 @@ export function nextTick (cb?: Function, ctx?: Object) {
   })
   if (!pending) {
     pending = true
+    //异步执行所有的callbacks
     timerFunc()
   }
   // $flow-disable-line
