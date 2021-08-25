@@ -409,6 +409,8 @@ export function mergeOptions (
   // Only merged options has the _base property.
   // 递归合并选项
   if (!child._base) {
+    //{extends}, 无需使用Vue.extend. 基于一个组件扩展另一个组件
+    //和minxin类似
     if (child.extends) {
       parent = mergeOptions(parent, child.extends, vm)
     }
@@ -432,6 +434,7 @@ export function mergeOptions (
     }
   }
   function mergeField (key) {
+    // 选项合并策略
     const strat = strats[key] || defaultStrat
     options[key] = strat(parent[key], child[key], vm, key)
   }

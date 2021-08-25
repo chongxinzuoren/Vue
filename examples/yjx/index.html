@@ -14,11 +14,13 @@
       <p>{{test()}}</p>
       <p>{{arr[0]}}</p>
       <p>{{arr[0].a}}</p>
+      <div id="app1"></div>
       <comp :msg="msg"></comp>
     </div>
     <script src="../../dist/vue.js"></script>
     <script>
-      Vue.component("comp", {
+      Vue.component("Comp", {
+        name: "Comp",
         props: {
           msg: {
             type: String,
@@ -30,6 +32,17 @@
         }, */
         template: "<div>I am a comp</div>",
       });
+
+      let ExtendCom = Vue.extend({
+        template: `<p>extendComponent:----->{{extendVal}}</p>`,
+        data() {
+          return {
+            extendVal: "extendVal",
+          };
+        },
+      });
+      new ExtendCom().$mount("#app1");
+
       let vm = new Vue({
         el: "#app",
         data: {

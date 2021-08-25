@@ -18,6 +18,30 @@ import type { SimpleSet } from '../util/index'
 
 let uid = 0
 
+/*
+this.$watch(()=>this.name+this.age,()=>{})
+expOrFn是一个函数, 需要收集多个Dep
+
+收集依赖流程
+observe->
+walk->
+defineReactive-> get->
+dep.depend->
+watcher.addDep(new Dep())->
+watcher.deps.push(dep)->
+dep.addSub(new Watcher())->
+dep.subs.push(watcher)
+
+
+更新流程
+set->
+dep.notify->
+subs[i].update->
+watcher.run || queueWatcher(this)->
+watcher.get() || watcher.cb->
+watcher.getter()->
+
+*/
 /**
  * A watcher parses an expression, collects dependencies,
  * and fires callback when the expression value changes.
@@ -44,8 +68,9 @@ export default class Watcher {
 
   constructor (
     vm: Component,
-    //实例化watcher时的第二个参数, getter函数
+    //$watch的第一个参数
     expOrFn: string | Function,
+    //实例化watcher时的第二个参数, getter函数
     cb: Function,
     options?: ?Object,
     isRenderWatcher?: boolean
@@ -69,8 +94,10 @@ export default class Watcher {
     this.id = ++uid // uid for batching
     this.active = true
     this.dirty = this.lazy // for lazy watchers
+    //记录当前订阅了哪些Dep
     this.deps = []
     this.newDeps = []
+    //记录当前Watcher已经订阅了该Dep
     this.depIds = new Set()
     this.newDepIds = new Set()
     this.expression = process.env.NODE_ENV !== 'production'
@@ -138,6 +165,8 @@ export default class Watcher {
   /**
    * Add a dependency to this directive.
    * 将dep放到Watcher中
+   * 用来记录自己订阅过哪些 Dep
+   * 为了将自己从依赖列表中删除掉
    */
   addDep (dep: Dep) {
     const id = dep.id
@@ -262,6 +291,7 @@ export default class Watcher {
       }
       let i = this.deps.length
       while (i--) {
+        //通知 订阅的Dep, 从依赖列表中移除
         this.deps[i].removeSub(this)
       }
       this.active = false

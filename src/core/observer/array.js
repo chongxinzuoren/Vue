@@ -20,6 +20,11 @@ const methodsToPatch = [
   'reverse'
 ]
 
+/*因为对于Array的变化侦测, 是拦截Array原型上方法实现的
+  this.list[0]=2
+  this.list.length=0
+  ** 诸如此类, 无法侦测
+*/
 /**
  * Intercept mutating methods and emit events
  */
@@ -32,6 +37,7 @@ methodsToPatch.forEach(function (method) {
   def(arrayMethods, method, function mutator (...args) {
     //先执行原生方法
     const result = original.apply(this, args)
+    //通过this.__ob__获取 Observer 实例
     const ob = this.__ob__
     let inserted
     //这三种 方法 会对数组元素 进行 新增 或者 删除

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script>
+      /* let arrayProto = Array.prototype;
+      let arrayMethods = Object.create(arrayProto);
+
+      ["push", "put"].forEach((method) => {
+        let original = arrayProto[method];
+        
+      }); */
+      class Observe {
+        constructor(value) {
+          this.value = value;
+
+          if (Array.isArray(value)) {
+            value.__proto__ = arrayMethods;
+          } else {
+            this.walk(value);
+          }
+        }
+
+        walk(obj) {
+          let keys = Object.keys(obj);
+          for (let i = 0; i < keys.length; i++) {
+            defineReactive(obj, keys[i], obj[keys[i]]);
+          }
+        }
+      }
+      function defineReactive(data, key, val) {
+        let childOb = observe(val);
+
+        let dep = new Dep();
+        Object.defineProperty(data, key, {
+          enumerable: true,
+          configurable: true,
+          get() {
+            dep.depend();
+            return val;
+          },
+          set(newVal) {
+            if (val === newVal) {
+              return;
+            }
+            val = new Val();
+            dep.notify();
+          },
+        });
+      }
+      function observe(value) {
+        if (typeof val != "object") return;
+        let ob;
+      }
+      class Dep {
+        constructor() {
+          this.subs = [];
+        }
+        addSub(sub) {
+          this.subs.push(sub);
+        }
+        removeSub(sub) {
+          let index = this.subs.indexOf(sub);
+          if (index > -1) {
+            this.subs.splice(index, 1);
+          }
+        }
+        depend() {
+          if (window.target) {
+            this.addSub(window.target);
+          }
+        }
+        notify() {
+          let subs = this.subs.slice(),
+            len = subs.length;
+          for (let i = 0; i < len; i++) {
+            subs[i].update();
+          }
+        }
+      }
+      class Watcher {
+        constructor(vm, expOrFn, cb) {}
+      }
+
+      function Vue() {}
+      class Vue {
+        constructor(options) {
+          this._init(options);
+        }
+        _init(options) {
+          this.$options = options;
+        }
+      }
+      function set(target, key, val) {
+      }
+    </script>
+    <script></script>
+  </body>
+</html>

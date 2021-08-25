@@ -43,6 +43,8 @@ export class Observer {
     this.value = value
     this.dep = new Dep()
     this.vmCount = 0
+    //在value上 新增一个不可枚举的属性__ob__, 值为当前Observer实例
+    //可以通过val.__ob__.dep.notify() 手动触发依赖
     def(value, '__ob__', this)
     if (Array.isArray(value)) {
       //处理数组响应式
@@ -230,14 +232,20 @@ export function set (target: Array<any> | Object, key: any, val: any): any {
   }
   if (Array.isArray(target) && isValidArrayIndex(key)) {
     target.length = Math.max(target.length, key)
+    //splice会直接触发响应式
     target.splice(key, 1, val)
     return val
   }
+  //如果值已经在对象(已经被监测)上了, 直接set 就能触发依赖
   if (key in target && !(key in Object.prototype)) {
     target[key] = val
     return val
   }
   const ob = (target: any).__ob__
+  //_isVue表示该对象是vue实例, vmCount判断是不是根数据对象
+  //data:{} 就是根数据对象
+  //为什么不能在根数据对象上添加?
+  //因为根数据不是简单的只是添加响应式, 而是进行了一系列的初始化操作(初始化流程那些)
   if (target._isVue || (ob && ob.vmCount)) {
     process.env.NODE_ENV !== 'production' && warn(
       'Avoid adding reactive properties to a Vue instance or its root $data ' +
@@ -245,10 +253,12 @@ export function set (target: Array<any> | Object, key: any, val: any): any {
     )
     return val
   }
+  //说明target不是响应式的(普通对象)
   if (!ob) {
     target[key] = val
     return val
   }
+  //双向绑定
   defineReactive(ob.value, key, val)
   ob.dep.notify()
   return val
@@ -256,6 +266,8 @@ export function set (target: Array<any> | Object, key: any, val: any): any {
 
 /**
  * Delete a property and trigger change if necessary.
+ * 就是拿到target.__ob__上的Observer中的dep
+ * delete target[key], 然后手动触发依赖__ob__.dep.notify()
  */
 export function del (target: Array<any> | Object, key: any) {
   if (process.env.NODE_ENV !== 'production' &&
@@ -275,6 +287,7 @@ export function del (target: Array<any> | Object, key: any) {
     )
     return
   }
+  //key不是target上的属性
   if (!hasOwn(target, key)) {
     return
   }

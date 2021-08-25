@@ -29,6 +29,9 @@ export default class Dep {
   }
 
   depend () {
+    //如果只有dep收集watcher, 就this.addSub(Dep.target)
+    //但是watcher也要收集dep, 所以就是watcher.addDep
+    //数据变化时, dep通知watcher,  watcher也记录了自己会被哪些Dep通知
     if (Dep.target) {
       //this 就是 Dep实例
       Dep.target.addDep(this)

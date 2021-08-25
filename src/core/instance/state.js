@@ -284,7 +284,7 @@ function createComputedGetter (key) {
       //将watcher.dirty 置为false
       //computed 和 methods 有什么区别
       // computed 计算结果会缓存
-      // 一次渲染过程中, 只会 执行一次computed 函数, 后续的访问就不会再次执行, 知道下一次更新之后, 才会再次执行 
+      // 一次渲染过程中, 只会 执行一次computed 函数, 后续的访问就不会再次执行, 直到下一次更新之后, 才会再次执行 
       if (watcher.dirty) {
         //这里一次渲染过程就为false, 只有 Wacher.update 才会变为true
         watcher.evaluate()
@@ -395,9 +395,10 @@ export function stateMixin (Vue: Class<Component>) {
   Object.defineProperty(Vue.prototype, '$data', dataDef)
   Object.defineProperty(Vue.prototype, '$props', propsDef)
 
+  //对于新增的属性, vue无法检测, 需要使用$set
   Vue.prototype.$set = set
   Vue.prototype.$delete = del
-  //this.$watch(key(expOrFn), {} || ()=>{})
+  //this.$watch(expOrFn, {} || ()=>{})
   //如果使用这种方式调用, 最后需要unwatch注销
   Vue.prototype.$watch = function (
     expOrFn: string | Function,
@@ -415,6 +416,7 @@ export function stateMixin (Vue: Class<Component>) {
     //实例化Watcher
     const watcher = new Watcher(vm, expOrFn, cb, options)
     //immediate: 立即执行 回调函数
+    //立即以 expOrFn 的当前值触发回调
     if (options.immediate) {
       try {
         cb.call(vm, watcher.value)
