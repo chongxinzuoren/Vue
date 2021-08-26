@@ -50,6 +50,7 @@ export function updateComponentListeners (
   target = undefined
 }
 
+//Hook Event: Vue的自定义事件结合生命周期钩子, 实现的一种 从组件外部为组件注入额外生命周期方法的功能
 export function eventsMixin (Vue: Class<Component>) {
   const hookRE = /^hook:/
   //将所有的事件和回调放在vm._events对向上 

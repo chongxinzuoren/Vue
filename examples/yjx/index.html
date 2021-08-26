@@ -16,24 +16,46 @@
       <p>{{arr[0]}}</p>
       <p>{{arr[0].a}}</p>
       <div id="app1"></div>
-      <comp :msg="msg" @custom-click="test1"></comp>
+      <comp
+        @hook:test1="handleHookEvent"
+        :msg="msg"
+        @custom-click="test1"
+      ></comp>
     </div>
     <script src="../../dist/vue.js"></script>
     <script>
       Vue.component("Comp", {
         name: "Comp",
+        template: `<ul>
+            <li v-for="item in arr" :key="JSON.stringify(item)">{{item}}</li>
+        </ul>`,
         props: {
           msg: {
             type: String,
             default: "",
           },
         },
+        data() {
+          return {
+            arr: [],
+            loading: false,
+          };
+        },
         /* created() {
           console.log("Comp start------------>");
-          console.log(this._props, this.msg,this);
+          console.log(this._props, this.msg, this);
           console.log("Comp end------------>");
         }, */
-        template: "<div>{{msg}}</div>",
+        async mounted() {
+          console.log("Comp---->mounted");
+          //通过hook event 在组件外部为组件注入额外的生命周期钩子逻辑
+          //console.log('loading...');
+          this.arr = await new Promise((resolve) => {
+            setTimeout(() => {
+              resolve([1, 2, 3, 4]);
+            }, 2000);
+          });
+        },
         methods: {
           test() {},
         },
@@ -61,6 +83,14 @@
           }, 1000); */
           this.$on("test", (p) => {
             console.log(p);
+          });
+
+          this.timer = setTimeout(() => {
+            console.log(333);
+          }, 1000);
+          //hook event
+          this.$on("hook:destroyed", () => {
+            clearInterval(this.timer);
           });
         },
         computed: {
@@ -93,6 +123,9 @@
           test1() {
             this.arr.push(2);
             //this.$emit("test", 1);
+          },
+          handleHookEvent() {
+            console.log("loading...");
           },
         },
       });

@@ -42,6 +42,7 @@ export function invokeWithErrorHandling (
 ) {
   let res
   try {
+    //直接执行对应钩子
     res = args ? handler.apply(context, args) : handler.call(context)
     if (res && !res._isVue && isPromise(res) && !res._handled) {
       res.catch(e => handleError(e, vm, info + ` (Promise/async)`))
