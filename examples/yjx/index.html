@@ -7,15 +7,16 @@
     <title>Document</title>
   </head>
   <body>
-    <div id="app">
+    <div id="app" @click="test">
       <p>{{printMsg}}</p>
       <p>{{printMsg}}</p>
       <p>{{test()}}</p>
       <p>{{test()}}</p>
+      <p @click="test1">click here</p>
       <p>{{arr[0]}}</p>
       <p>{{arr[0].a}}</p>
       <div id="app1"></div>
-      <comp :msg="msg"></comp>
+      <comp :msg="msg" @custom-click="test1"></comp>
     </div>
     <script src="../../dist/vue.js"></script>
     <script>
@@ -28,9 +29,14 @@
           },
         },
         /* created() {
-          console.log(this._props, this.msg);
+          console.log("Comp start------------>");
+          console.log(this._props, this.msg,this);
+          console.log("Comp end------------>");
         }, */
-        template: "<div>I am a comp</div>",
+        template: "<div>{{msg}}</div>",
+        methods: {
+          test() {},
+        },
       });
 
       let ExtendCom = Vue.extend({
@@ -53,6 +59,9 @@
           /* setInterval(() => {
             this.msg += "1";
           }, 1000); */
+          this.$on("test", (p) => {
+            console.log(p);
+          });
         },
         computed: {
           printMsg() {
@@ -61,12 +70,18 @@
           },
         },
         watch: {
+          arr: {
+            handler(newV, oldV) {
+              console.log(newV, oldV, "watch----->arr");
+            },
+            immediate: true,
+          },
           msg: [
             function (newV, oldV) {
-              console.log(newV, oldV, "-------> 第一次watch");
+              console.log(newV, oldV, "watch---->msg---> 第一次watch");
             },
             (newV, oldV) => {
-              console.log(newV, oldV, "-------> 第二次watch");
+              console.log(newV, oldV, "watch---->msg---> 第二次watch");
             },
           ],
         },
@@ -74,6 +89,10 @@
           test() {
             console.log("----------> methods__ test");
             return `${this.msg}-->methods`;
+          },
+          test1() {
+            this.arr.push(2);
+            //this.$emit("test", 1);
           },
         },
       });

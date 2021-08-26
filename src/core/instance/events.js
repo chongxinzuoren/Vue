@@ -22,6 +22,7 @@ export function initEvents (vm: Component) {
 let target: any
 
 function add (event, fn) {
+  //this.$on
   target.$on(event, fn)
 }
 
@@ -51,23 +52,31 @@ export function updateComponentListeners (
 
 export function eventsMixin (Vue: Class<Component>) {
   const hookRE = /^hook:/
+  //将所有的事件和回调放在vm._events对向上 
+  //$on(key || [key1,key2...])
   Vue.prototype.$on = function (event: string | Array<string>, fn: Function): Component {
     const vm: Component = this
     if (Array.isArray(event)) {
+      //数组, 遍历监听
       for (let i = 0, l = event.length; i < l; i++) {
         vm.$on(event[i], fn)
       }
     } else {
+      // 一个事件可以设置多个响应函数
+      // vm._events[type]=[fn,fn1...]
       (vm._events[event] || (vm._events[event] = [])).push(fn)
       // optimize hook:event cost by using a boolean flag marked at registration
       // instead of a hash lookup
+      //<comp @hook:mounted="hookMounted">
       if (hookRE.test(event)) {
+        //当前实例存在hook event
         vm._hasHookEvent = true
       }
     }
     return vm
   }
 
+  //对回调进行包装
   Vue.prototype.$once = function (event: string, fn: Function): Component {
     const vm: Component = this
     function on () {
@@ -79,9 +88,21 @@ export function eventsMixin (Vue: Class<Component>) {
     return vm
   }
 
+  /**
+   * 移除vm._events 对象上的 指定事件的指定回调
+   *  1. 没有提供参数, vm._events={}
+   *  2. 提供第一个参数, vm._events[event]=null
+   *  3. 提供了两个参数, 移除指定回调函数
+   * 
+   * 总结: 操作通过$on 设置的vm._events 对象
+   * @param {*}} event 
+   * @param {*} fn 
+   * @returns 
+   */
   Vue.prototype.$off = function (event?: string | Array<string>, fn?: Function): Component {
     const vm: Component = this
     // all
+    //没有参数, 移除所有 event
     if (!arguments.length) {
       vm._events = Object.create(null)
       return vm
@@ -89,15 +110,18 @@ export function eventsMixin (Vue: Class<Component>) {
     // array of events
     if (Array.isArray(event)) {
       for (let i = 0, l = event.length; i < l; i++) {
+        //递归调用
         vm.$off(event[i], fn)
       }
       return vm
     }
     // specific event
+    //对应 event 的所有 回调
     const cbs = vm._events[event]
     if (!cbs) {
       return vm
     }
+    //没有指定event的回调函数, 移除所有回调
     if (!fn) {
       vm._events[event] = null
       return vm
@@ -107,6 +131,7 @@ export function eventsMixin (Vue: Class<Component>) {
     let i = cbs.length
     while (i--) {
       cb = cbs[i]
+      //移除指定事件的指定的回调函数
       if (cb === fn || cb.fn === fn) {
         cbs.splice(i, 1)
         break
@@ -129,9 +154,11 @@ export function eventsMixin (Vue: Class<Component>) {
         )
       }
     }
+    //指定事件的所有回调
     let cbs = vm._events[event]
     if (cbs) {
       cbs = cbs.length > 1 ? toArray(cbs) : cbs
+      //this.$emit("key", arg1, arg2...)
       const args = toArray(arguments, 1)
       const info = `event handler for "${event}"`
       for (let i = 0, l = cbs.length; i < l; i++) {

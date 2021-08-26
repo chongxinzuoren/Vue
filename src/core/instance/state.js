@@ -376,6 +376,7 @@ export function stateMixin (Vue: Class<Component>) {
   // flow somehow has problems with directly declared definition object
   // when using Object.defineProperty, so we have to procedurally build up
   // the object here.
+  //处理 data 和 props, 分别定义get和set(只读)
   const dataDef = {}
   dataDef.get = function () { return this._data }
   const propsDef = {}
@@ -392,6 +393,7 @@ export function stateMixin (Vue: Class<Component>) {
       warn(`$props is readonly.`, this)
     }
   }
+  //vm.$data, vm.$props
   Object.defineProperty(Vue.prototype, '$data', dataDef)
   Object.defineProperty(Vue.prototype, '$props', propsDef)
 
@@ -416,7 +418,7 @@ export function stateMixin (Vue: Class<Component>) {
     //实例化Watcher
     const watcher = new Watcher(vm, expOrFn, cb, options)
     //immediate: 立即执行 回调函数
-    //立即以 expOrFn 的当前值触发回调
+    //立即以 expOrFn 的当前值(未更新的)触发回调
     if (options.immediate) {
       try {
         cb.call(vm, watcher.value)
