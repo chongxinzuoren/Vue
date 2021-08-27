@@ -50,6 +50,11 @@ export function updateComponentListeners (
   target = undefined
 }
 
+//平时使用都是 父组件.$emit, 子组件.$on, 不代表就是父组件监听, 子组件注册
+//$emit, $on都是 对vm._events对象进行处理, 事件只在子组件上._events,  父组件没有, 所以不可能是父组件监听
+//即谁注册, 谁监听
+
+// vm._events
 //Hook Event: Vue的自定义事件结合生命周期钩子, 实现的一种 从组件外部为组件注入额外生命周期方法的功能
 export function eventsMixin (Vue: Class<Component>) {
   const hookRE = /^hook:/

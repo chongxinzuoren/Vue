@@ -77,8 +77,10 @@ export default class Watcher {
   ) {
     this.vm = vm
     if (isRenderWatcher) {
+      //渲染watcher
       vm._watcher = this
     }
+    //添加的所有watcher, 用于teardown
     vm._watchers.push(this)
     // options
     if (options) {

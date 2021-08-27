@@ -121,8 +121,11 @@
             return `${this.msg}-->methods`;
           },
           test1() {
-            this.arr.push(2);
             //this.$emit("test", 1);
+            this.$nextTick(() => {
+              console.log(JSON.stringify(this.arr));
+            });
+            this.arr.push(2);
           },
           handleHookEvent() {
             console.log("loading...");

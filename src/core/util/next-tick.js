@@ -95,6 +95,10 @@ if (typeof Promise !== 'undefined' && isNative(Promise)) {
 }
 
 //pending: 保证在同一时刻, 浏览器的任务队列只有一个flushCallbacks
+//pending: 是否已经向任务队列添加了一个任务
+//第一次调用nextTick, callbacks中添加fn, timerFunc执行
+//第二次调用nextTick, callbacks中添加fn1
+//主线程完成, timerFunc回调执行 
 export function nextTick (cb?: Function, ctx?: Object) {
   let _resolve
   //将 nextTick 的回调函数用 try-catch 包装一层, 方便异常捕获
@@ -115,6 +119,7 @@ export function nextTick (cb?: Function, ctx?: Object) {
     //异步执行所有的callbacks
     timerFunc()
   }
+  //没有回调就返回一个Promise
   // $flow-disable-line
   if (!cb && typeof Promise !== 'undefined') {
     return new Promise(resolve => {

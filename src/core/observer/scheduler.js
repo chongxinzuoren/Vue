@@ -24,6 +24,7 @@ let index = 0
 
 /**
  * Reset the scheduler's state.
+ * 执行queue, 并清空队列
  */
 function resetSchedulerState () {
   index = queue.length = activatedChildren.length = 0
@@ -192,6 +193,7 @@ export function queueWatcher (watcher: Watcher) {
     }
     // queue the flush
 
+    //防止flushSchedulerQueue重复添加
     if (!waiting) {
       // 当前浏览器的异步任务队列没有 flushSchedulerQueue 函数
       waiting = true
