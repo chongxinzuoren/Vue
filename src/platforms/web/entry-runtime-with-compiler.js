@@ -13,12 +13,16 @@ const idToTemplate = cached(id => {
   const el = query(id)
   return el && el.innerHTML
 })
-
+// $mount 做备份
 const mount = Vue.prototype.$mount
+// 覆写$mount(函数劫持)
+// 同时设置了:el, template, render 优先级是什么
+// render > template > el
 Vue.prototype.$mount = function (
-  el?: string | Element,
+  el?: string | Element,//选择器
   hydrating?: boolean
 ): Component {
+  //获取DOM元素
   el = el && query(el)
 
   /* istanbul ignore if */
@@ -29,12 +33,15 @@ Vue.prototype.$mount = function (
     return this
   }
 
+  //编译器
   const options = this.$options
   // resolve template/el and convert to render function
   if (!options.render) {
+    //将模板编译成渲染函数
     let template = options.template
     if (template) {
       if (typeof template === 'string') {
+        //id选择器, 拿到el.template
         if (template.charAt(0) === '#') {
           template = idToTemplate(template)
           /* istanbul ignore if */
@@ -45,7 +52,9 @@ Vue.prototype.$mount = function (
             )
           }
         }
+        //是字符串, 但不是#开头, 说明是 用户设置 的模板
       } else if (template.nodeType) {
+        //是否为DOM元素
         template = template.innerHTML
       } else {
         if (process.env.NODE_ENV !== 'production') {
@@ -54,6 +63,7 @@ Vue.prototype.$mount = function (
         return this
       }
     } else if (el) {
+      //返回DOM元素的HTML字符串
       template = getOuterHTML(el)
     }
     if (template) {
@@ -66,9 +76,12 @@ Vue.prototype.$mount = function (
         outputSourceRange: process.env.NODE_ENV !== 'production',
         shouldDecodeNewlines,
         shouldDecodeNewlinesForHref,
+        //界定符, {{}}
         delimiters: options.delimiters,
+        //是否保留注释
         comments: options.comments
       }, this)
+      
       options.render = render
       options.staticRenderFns = staticRenderFns
 

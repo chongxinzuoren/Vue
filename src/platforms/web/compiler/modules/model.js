@@ -24,6 +24,8 @@ import {
 } from 'compiler/parser/index'
 
 function preTransformNode (el: ASTElement, options: CompilerOptions) {
+  // 处理包含v-model的input标签
+  // <input v-model="xx" :type="xx" />
   if (el.tag === 'input') {
     const map = el.attrsMap
     if (!map['v-model']) {
@@ -39,7 +41,10 @@ function preTransformNode (el: ASTElement, options: CompilerOptions) {
     }
 
     if (typeBinding) {
+      //<input v-if="xx" />
+      //ifCondition = xx
       const ifCondition = getAndRemoveAttr(el, 'v-if', true)
+      //&&xx
       const ifConditionExtra = ifCondition ? `&&(${ifCondition})` : ``
       const hasElse = getAndRemoveAttr(el, 'v-else', true) != null
       const elseIfCondition = getAndRemoveAttr(el, 'v-else-if', true)

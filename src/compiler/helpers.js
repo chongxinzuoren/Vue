@@ -163,6 +163,7 @@ export function getBindingAttr (
   name: string,
   getStatic?: boolean
 ): ?string {
+  //:aa="bb" === v-bind:aa="bb"
   const dynamicValue =
     getAndRemoveAttr(el, ':' + name) ||
     getAndRemoveAttr(el, 'v-bind:' + name)

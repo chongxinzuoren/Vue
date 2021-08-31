@@ -66,6 +66,7 @@ export function createASTElement (
     type: 1,
     tag,
     attrsList: attrs,
+    // { attrName: attrVal }
     attrsMap: makeAttrsMap(attrs),
     rawAttrsMap: {},
     parent,
@@ -88,16 +89,20 @@ export function parse (
   const isReservedTag = options.isReservedTag || no
   maybeComponent = (el: ASTElement) => !!el.component || !isReservedTag(el.tag)
 
+  // 三个数组, 每个元素都是一个函数, 分别是style, class, model 这三个模块导出的对应函数
   transforms = pluckModuleFunction(options.modules, 'transformNode')
   preTransforms = pluckModuleFunction(options.modules, 'preTransformNode')
   postTransforms = pluckModuleFunction(options.modules, 'postTransformNode')
 
+  //界定符
   delimiters = options.delimiters
 
   const stack = []
   const preserveWhitespace = options.preserveWhitespace !== false
   const whitespaceOption = options.whitespace
+  //最终的ast对象
   let root
+  //记录当前元素的父元素
   let currentParent
   let inVPre = false
   let inPre = false
@@ -210,9 +215,18 @@ export function parse (
     shouldDecodeNewlinesForHref: options.shouldDecodeNewlinesForHref,
     shouldKeepComment: options.comments,
     outputSourceRange: options.outputSourceRange,
+    /**
+     * 
+     * @param {*} tag 标签名
+     * @param {*} attrs 属性数组[{name, value, start, end}]
+     * @param {*} unary 是否为自闭合标签
+     * @param {*} start 标签起始索引
+     * @param {*} end 标签结束索引
+     */
     start (tag, attrs, unary, start, end) {
       // check namespace.
       // inherit parent ns if there is one
+      //命名空间
       const ns = (currentParent && currentParent.ns) || platformGetTagNamespace(tag)
 
       // handle IE svg bug
@@ -221,6 +235,7 @@ export function parse (
         attrs = guardIESVGBug(attrs)
       }
 
+      // 生成当前标签的 AST 对象
       let element: ASTElement = createASTElement(tag, attrs, currentParent)
       if (ns) {
         element.ns = ns
@@ -230,6 +245,7 @@ export function parse (
         if (options.outputSourceRange) {
           element.start = start
           element.end = end
+          // 和 attrsMap 一样
           element.rawAttrsMap = element.attrsList.reduce((cumulated, attr) => {
             cumulated[attr.name] = attr
             return cumulated
@@ -379,10 +395,12 @@ export function parse (
         }
       }
     },
+    //处理注释内容
     comment (text: string, start, end) {
       // adding anything as a sibling to the root node is forbidden
       // comments should still be allowed, but ignored
       if (currentParent) {
+        //创建文本节点的AST
         const child: ASTText = {
           type: 3,
           text,

@@ -210,8 +210,12 @@ export function createPatchFunction (backend) {
   function createComponent (vnode, insertedVnodeQueue, parentElm, refElm) {
     let i = vnode.data
     if (isDef(i)) {
+      // keep-alive是如何使用缓存的?
+      // 首次加载被包裹组件时, vnode.componentInstance=undefined, keepAlive=true
+      // 再次访问时, vnode.componentInstance为被缓存的组件实例, 这样就把上次的DOM插入到父元素中
       const isReactivated = isDef(vnode.componentInstance) && i.keepAlive
       if (isDef(i = i.hook) && isDef(i = i.init)) {
+        //执行组件的内部钩子 init
         i(vnode, false /* hydrating */)
       }
       // after calling the init hook, if the vnode is a child component
@@ -220,6 +224,7 @@ export function createPatchFunction (backend) {
       // in that case we can just return the element and be done.
       if (isDef(vnode.componentInstance)) {
         initComponent(vnode, insertedVnodeQueue)
+        // 将 DOM 插入父节点中
         insert(parentElm, vnode.elm, refElm)
         if (isTrue(isReactivated)) {
           reactivateComponent(vnode, insertedVnodeQueue, parentElm, refElm)
@@ -234,6 +239,9 @@ export function createPatchFunction (backend) {
       insertedVnodeQueue.push.apply(insertedVnodeQueue, vnode.data.pendingInsert)
       vnode.data.pendingInsert = null
     }
+    //为什么keep-alive有max限制?
+    //真实节点对象很大, 大量保留缓存组件耗费性能
+    //vnode 保存真实节点
     vnode.elm = vnode.componentInstance.$el
     if (isPatchable(vnode)) {
       invokeCreateHooks(vnode, insertedVnodeQueue)
@@ -580,6 +588,7 @@ export function createPatchFunction (backend) {
       vnode.parent.data.pendingInsert = queue
     } else {
       for (let i = 0; i < queue.length; ++i) {
+        // 调用组件实例的 insert 钩子
         queue[i].data.hook.insert(queue[i])
       }
     }

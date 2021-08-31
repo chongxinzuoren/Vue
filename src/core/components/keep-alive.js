@@ -34,6 +34,7 @@ function pruneCache (keepAliveInstance: any, filter: Function) {
   }
 }
 
+//在外部可以仿这个函数操作 keep-alive 的缓存
 function pruneCacheEntry (
   cache: VNodeCache,
   key: string,
@@ -50,8 +51,12 @@ function pruneCacheEntry (
 
 const patternTypes: Array<Function> = [String, RegExp, Array]
 
+//LRU, cache对象存组件实例, key存键顺序
 export default {
   name: 'keep-alive',
+  //抽象组件, 不渲染DOM节点, 但是渲染vNode节点
+  //没有真实节点, 不会去渲染成真实的DOM节点, 只是作为中间的数据过渡层处理
+  //
   abstract: true,
 
   props: {
@@ -72,6 +77,7 @@ export default {
   },
 
   mounted () {
+    //include, exclude 变化重新过滤cache
     this.$watch('include', val => {
       pruneCache(this, name => matches(val, name))
     })
@@ -82,6 +88,7 @@ export default {
 
   render () {
     const slot = this.$slots.default
+    //获取第一个组件节点
     const vnode: VNode = getFirstComponentChild(slot)
     const componentOptions: ?VNodeComponentOptions = vnode && vnode.componentOptions
     if (componentOptions) {
@@ -104,6 +111,7 @@ export default {
         ? componentOptions.Ctor.cid + (componentOptions.tag ? `::${componentOptions.tag}` : '')
         : vnode.key
       if (cache[key]) {
+        //缓存存在, 直接使用旧的
         vnode.componentInstance = cache[key].componentInstance
         // make current key freshest
         remove(keys, key)

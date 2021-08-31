@@ -16,11 +16,13 @@
       <p>{{arr[0]}}</p>
       <p>{{arr[0].a}}</p>
       <div id="app1"></div>
-      <comp
-        @hook:test1="handleHookEvent"
-        :msg="msg"
-        @custom-click="test1"
-      ></comp>
+      <keep-alive>
+        <comp
+          @hook:test1="handleHookEvent"
+          :msg="msg"
+          @custom-click="test1"
+        ></comp>
+      </keep-alive>
     </div>
     <script src="../../dist/vue.js"></script>
     <script>

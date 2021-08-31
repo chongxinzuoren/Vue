@@ -65,6 +65,7 @@ export function parseHTML (html, options) {
       let textEnd = html.indexOf('<')
       if (textEnd === 0) {
         // Comment:
+        // <!-- xx -->
         if (comment.test(html)) {
           const commentEnd = html.indexOf('-->')
 
@@ -78,6 +79,7 @@ export function parseHTML (html, options) {
         }
 
         // http://en.wikipedia.org/wiki/Conditional_comment#Downlevel-revealed_conditional_comment
+        // 处理条件注释
         if (conditionalComment.test(html)) {
           const conditionalEnd = html.indexOf(']>')
 
@@ -88,6 +90,7 @@ export function parseHTML (html, options) {
         }
 
         // Doctype:
+        // 处理<!DOCTYPE html>
         const doctypeMatch = html.match(doctype)
         if (doctypeMatch) {
           advance(doctypeMatch[0].length)
@@ -103,7 +106,10 @@ export function parseHTML (html, options) {
           continue
         }
 
+        //重点
+
         // Start tag:
+        // {tagName, attrs:[xx], start}
         const startTagMatch = parseStartTag()
         if (startTagMatch) {
           handleStartTag(startTagMatch)
@@ -178,13 +184,14 @@ export function parseHTML (html, options) {
 
   // Clean up any remaining tags
   parseEndTag()
-
+  //截取html(已修改后面的, 索引 +n)
   function advance (n) {
     index += n
     html = html.substring(n)
   }
 
   function parseStartTag () {
+    // <start></start>
     const start = html.match(startTagOpen)
     if (start) {
       const match = {
@@ -194,12 +201,14 @@ export function parseHTML (html, options) {
       }
       advance(start[0].length)
       let end, attr
+      //处理标签上的 属性
       while (!(end = html.match(startTagClose)) && (attr = html.match(dynamicArgAttribute) || html.match(attribute))) {
         attr.start = index
         advance(attr[0].length)
         attr.end = index
         match.attrs.push(attr)
       }
+      //结束
       if (end) {
         match.unarySlash = end[1]
         advance(end[0].length)
@@ -226,6 +235,7 @@ export function parseHTML (html, options) {
 
     const l = match.attrs.length
     const attrs = new Array(l)
+    // attrs = [{name: attrName, value: attrVal, satrt, end}...]
     for (let i = 0; i < l; i++) {
       const args = match.attrs[i]
       const value = args[3] || args[4] || args[5] || ''
@@ -243,6 +253,7 @@ export function parseHTML (html, options) {
     }
 
     if (!unary) {
+      //非自闭合标签
       stack.push({ tag: tagName, lowerCasedTag: tagName.toLowerCase(), attrs: attrs, start: match.start, end: match.end })
       lastTag = tagName
     }

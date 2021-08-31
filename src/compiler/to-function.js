@@ -22,8 +22,11 @@ export function createCompileToFunctionFn (compile: Function): Function {
   const cache = Object.create(null)
 
   return function compileToFunctions (
+    //字符串模板
     template: string,
+    //编译选项
     options?: CompilerOptions,
+    //组件实例
     vm?: Component
   ): CompiledFunctionResult {
     options = extend({}, options)
@@ -56,7 +59,8 @@ export function createCompileToFunctionFn (compile: Function): Function {
       return cache[key]
     }
 
-    // compile
+    // compile 编译
+    // compiler.render: 是一个可执行函数的字符串
     const compiled = compile(template, options)
 
     // check compilation errors/tips
@@ -87,10 +91,13 @@ export function createCompileToFunctionFn (compile: Function): Function {
       }
     }
 
+    //编译结果
     // turn code into functions
     const res = {}
     const fnGenErrors = []
+    // new Function(code)  字符串转为函数
     res.render = createFunction(compiled.render, fnGenErrors)
+    // 静态节点 
     res.staticRenderFns = compiled.staticRenderFns.map(code => {
       return createFunction(code, fnGenErrors)
     })
@@ -109,6 +116,7 @@ export function createCompileToFunctionFn (compile: Function): Function {
       }
     }
 
+    //编译结果缓存
     return (cache[key] = res)
   }
 }

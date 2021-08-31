@@ -41,6 +41,8 @@ const componentVNodeHooks = {
       vnode.data.keepAlive
     ) {
       // kept-alive components, treat as a patch
+      // 被keep-alive缓存的组件, 没有完整的生命周期
+      // 不会进入$mount(beforeCreate, created, mounted都不再执行)
       const mountedNode: any = vnode // work around flow
       componentVNodeHooks.prepatch(mountedNode, mountedNode)
     } else {
@@ -70,6 +72,7 @@ const componentVNodeHooks = {
       componentInstance._isMounted = true
       callHook(componentInstance, 'mounted')
     }
+    //keep-alive切换 会触发 actived 和 deactived
     if (vnode.data.keepAlive) {
       if (context._isMounted) {
         // vue-router#1212
@@ -205,6 +208,7 @@ export function createComponent (
   return vnode
 }
 
+//组件实例, 每个组件都是一个vue实例
 export function createComponentInstanceForVnode (
   vnode: any, // we know it's MountedComponentVNode but flow doesn't
   parent: any, // activeInstance in lifecycle state

@@ -20,7 +20,9 @@ const genStaticKeysCached = cached(genStaticKeys)
  */
 export function optimize (root: ?ASTElement, options: CompilerOptions) {
   if (!root) return
+  //获取静态key, 比如staticStyle, staticClass
   isStaticKey = genStaticKeysCached(options.staticKeys || '')
+  //判断是否是平台保留标签
   isPlatformReservedTag = options.isReservedTag || no
   // first pass: mark all non-static nodes.
   markStatic(root)
@@ -36,6 +38,7 @@ function genStaticKeys (keys: string): Function {
 }
 
 function markStatic (node: ASTNode) {
+  //节点static属性: 是否为静态节点
   node.static = isStatic(node)
   if (node.type === 1) {
     // do not make component slot content static. this avoids

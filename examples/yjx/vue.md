@@ -58,3 +58,14 @@ JS是单线程非异步, 在执行代码时只有一个主线程, 需要处理�
 异步任务: 微任务, 宏任务
 微任务队列中是否有任务存在, 如果存在, 依次执行微任务队列中`所有`事件对应的回调. 然后去宏任务队列取出 `一个` 事件, 把对应的回调加入当前执行栈, 当执行栈中所有任务都执行完, 又去检查微任务队列中是否有事件存在, 无限重复
 
+
+
+keep-alive 缓存的是组件的vnode
+
+建立父子关系时(initLifecycle), 会跳过keepAlive组件从而跳过生成真正的DOM节点
+
+首次render被包裹组件时, 
+
+当组件的keepAlive为true时, 不再进入$mount过程(beforeCreate, created, mounted)都不再执行
+
+切换keep-alive时 会触发actived和deactived, patch时会触发invokeInsertHook, 或者函数会触发组件的insert钩子, 递归调用子组件的actived生命周期函数

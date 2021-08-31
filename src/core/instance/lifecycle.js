@@ -34,6 +34,9 @@ export function initLifecycle (vm: Component) {
 
   // locate first non-abstract parent
   let parent = options.parent
+  // keep-alive 怎么做到 不生成真正的DOM节点?
+  // 找到第一个 非抽象 父组件实例
+  // 抽象组件跳过, 不会建立父子 组件关系
   if (parent && !options.abstract) {
     while (parent.$options.abstract && parent.$parent) {
       parent = parent.$parent
@@ -196,7 +199,8 @@ export function mountComponent (
   } else {
     // 负责更新组件
     updateComponent = () => {
-      //执行_update 进入更新阶段, 首先执行_render(将组件变成VNode )
+      //执行_update 进入更新阶段(对最新的vNode和旧的vNode做patch)
+      //首先执行_render(将组件变成VNode )
       vm._update(vm._render(), hydrating)
     }
   }
@@ -309,6 +313,7 @@ function isInInactiveTree (vm) {
   return false
 }
 
+// 递归调用, 执行所有子组件的actived钩子
 export function activateChildComponent (vm: Component, direct?: boolean) {
   if (direct) {
     vm._directInactive = false
